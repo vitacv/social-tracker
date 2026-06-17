@@ -106,18 +106,18 @@ form.add button:hover { background:#000; }
 /* ===================== DATA (auto-refresh appends here) ===================== */
 /* readings: one snapshot per check. null = not captured that day. */
 const SEED_READINGS = [
-  { date: "2026-06-17", ig_followers: 31, ig_posts: null, li_connections: null, li_followers: null }
+  { date: "2026-06-17", ig_followers: 31, ig_posts: 7, li_connections: null, li_followers: null }
 ];
 
 /* posts: most-recent Instagram posts. likes/comments null until captured signed-in. */
 const SEED_POSTS = [
-  { code: "DZpgRcPMXgo", type: "post",     date: null, likes: null, comments: null, caption: "Most people run AI like one overworked assistant. One chat window asked to do the books, the follow-ups, everything." },
-  { code: "DZkeVKADB-b", type: "carousel", date: null, likes: null, comments: null, caption: "Claude forgets you the moment you close the chat. The operators getting real work out of it are not relying on memory." },
-  { code: "DZidvnMM1Sk", type: "post",     date: null, likes: null, comments: null, caption: "Your AI sounds generic because it has no idea who you are. A CLAUDE.md fixes that. It is one plain markdown file." },
-  { code: "DZfK24sjFqM", type: "carousel", date: null, likes: null, comments: null, caption: "Most companies are using AI wrong. They bolt it onto the old org chart and call it transformation." },
-  { code: "DY-c85hB6dy", type: "reel",     date: null, likes: null, comments: null, caption: "29 Claude agents. 5 million tokens an hour. Opus 4.8, Ultracode, running live. Looks like a lot." },
-  { code: "DYz34VDjOxA", type: "carousel", date: null, likes: null, comments: null, caption: "I thought AI would replace execution. Turns out it rewards operators. The first 3 months with Claude." },
-  { code: "DYVeMvzuHz5", type: "reel",     date: null, likes: null, comments: null, caption: "Most operators try Claude, get a cool artifact, and then watch their vibe-coded app fall apart." }
+  { code: "DZpgRcPMXgo", type: "post",     date: "2026-06-16", likes: 1,    comments: 0,    caption: "Most people run AI like one overworked assistant. One chat window asked to do the books, the follow-ups, everything." },
+  { code: "DZkeVKADB-b", type: "carousel", date: "2026-06-14", likes: 3,    comments: 0,    caption: "Claude forgets you the moment you close the chat. The operators getting real work out of it are not relying on memory." },
+  { code: "DZidvnMM1Sk", type: "post",     date: "2026-06-13", likes: null, comments: 0,    caption: "Your AI sounds generic because it has no idea who you are. A CLAUDE.md fixes that. It is one plain markdown file." },
+  { code: "DZfK24sjFqM", type: "carousel", date: "2026-06-12", likes: 1,    comments: 0,    caption: "Most companies are using AI wrong. They bolt it onto the old org chart and call it transformation." },
+  { code: "DY-c85hB6dy", type: "reel",     date: "2026-05-30", likes: null, comments: 0,    caption: "29 Claude agents. 5 million tokens an hour. Opus 4.8, Ultracode, running live. Looks like a lot." },
+  { code: "DYz34VDjOxA", type: "carousel", date: "2026-05-26", likes: 4,    comments: null, caption: "I thought AI would replace execution. Turns out it rewards operators. The first 3 months with Claude." },
+  { code: "DYVeMvzuHz5", type: "reel",     date: "2026-05-14", likes: 8,    comments: null, caption: "Most operators try Claude, get a cool artifact, and then watch their vibe-coded app fall apart." }
 ];
 
 const IG_URL = "https://www.instagram.com/jakebuilds.ai/";
