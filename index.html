@@ -93,7 +93,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
   <!-- computed insights -->
   <div class="section">
     <h2>Insights &amp; recommendations</h2>
-    <p class="note">Computed from the last 7 posts.</p>
+    <p class="note">Computed across every post on the account.</p>
     <div class="insights" id="insights"></div>
   </div>
 
@@ -123,8 +123,8 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 
   <!-- per-post table -->
   <div class="section">
-    <h2>Post performance</h2>
-    <p class="note">Click a caption to open the post. Sorted newest first.</p>
+    <h2>Post performance — every post</h2>
+    <p class="note">Complete history, newest first. Each row links to the post followed by its figures.</p>
     <div class="tbl-wrap"><table id="postTable"></table></div>
   </div>
 
@@ -145,7 +145,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 <script>
 /* ============ DATA (auto-refresh updates these) ============ */
 const SEED_READINGS = [
-  { date: "2026-06-17", ig_followers: 31, ig_posts: 7, li_connections: null, li_followers: null }
+  { date: "2026-06-17", ig_followers: 31, ig_posts: 8, li_connections: null, li_followers: null }
 ];
 
 const SEED_ACCOUNT = {
@@ -156,6 +156,7 @@ const SEED_ACCOUNT = {
 };
 
 const SEED_POSTS = [
+  { code:"DZsL8wgjMhN", type:"carousel", date:"2026-06-17", caption:"If you're buying real estate, the fastest win with AI is letting it screen your deals.", views:10,  reach:4,   likes:0, comments:0, saves:0, shares:0, interactions:0,  engaged:0, profileVisits:0, linkTaps:0 },
   { code:"DZpgRcPMXgo", type:"post",     date:"2026-06-16", caption:"Most people run AI like one overworked assistant. One chat window asked to do everything.", views:24,  reach:10,  likes:1, comments:0, saves:0, shares:0, interactions:1,  engaged:1, profileVisits:0, linkTaps:0 },
   { code:"DZkeVKADB-b", type:"carousel", date:"2026-06-14", caption:"Claude forgets you the moment you close the chat. Give it a memory: one Obsidian folder.", views:42,  reach:13,  likes:3, comments:0, saves:3, shares:0, interactions:6,  engaged:5, profileVisits:1, linkTaps:0 },
   { code:"DZidvnMM1Sk", type:"post",     date:"2026-06-13", caption:"Your AI sounds generic because it has no idea who you are. A CLAUDE.md fixes that.", views:27,  reach:12,  likes:0, comments:0, saves:0, shares:0, interactions:0,  engaged:0, profileVisits:0, linkTaps:0 },
@@ -262,18 +263,20 @@ new Chart(document.getElementById("formatChart"),{type:"bar",
   options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
 
 /* ---- post table ---- */
-const cols=[["Post","caption"],["Type","type"],["Date","date"],["Views","views"],["Reach","reach"],["Likes","likes"],["Comments","comments"],["Saves","saves"],["ER","er"],["Profile visits","profileVisits"]];
-let html="<thead><tr>"+cols.map(c=>`<th>${c[0]}</th>`).join("")+"</tr></thead><tbody>";
+const heads=["Post","Link","Type","Date","Views","Reach","Likes","Comments","Saves","Interactions","ER","Profile visits"];
+let html="<thead><tr>"+heads.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
 [...P].forEach(p=>{
   const url=`https://www.instagram.com/jakebuilds.ai/${p.type==="reel"?"reel":"p"}/${p.code}/`;
   html+="<tr>";
-  html+=`<td><a href="${url}" target="_blank" rel="noopener">${p.caption.slice(0,52)}…</a>${p.fbViews?` <span class="muted">(+${p.fbViews} FB)</span>`:""}</td>`;
+  html+=`<td>${p.caption.slice(0,52)}…${p.fbViews?` <span class="muted">(+${p.fbViews} FB)</span>`:""}</td>`;
+  html+=`<td><a href="${url}" target="_blank" rel="noopener">${p.type==="reel"?"reel":"p"}/${p.code} ↗</a></td>`;
   html+=`<td><span class="tag t-${p.type}">${p.type}</span></td>`;
   html+=`<td>${dt(p.date)}</td>`;
-  html+=`<td><b>${fmt(p.views)}</b></td><td>${fmt(p.reach)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.comments)}</td><td>${fmt(p.saves)}</td>`;
+  html+=`<td><b>${fmt(p.views)}</b></td><td>${fmt(p.reach)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.comments)}</td><td>${fmt(p.saves)}</td><td>${fmt(p.interactions)}</td>`;
   html+=`<td>${(er(p)*100).toFixed(1)}%</td><td>${fmt(p.profileVisits)}</td>`;
   html+="</tr>";
 });
+html+=`<tr style="font-weight:700"><td>TOTAL · ${P.length} posts</td><td></td><td></td><td></td><td>${fmt(P.reduce((s,p)=>s+p.views,0))}</td><td>${fmt(P.reduce((s,p)=>s+p.reach,0))}</td><td>${fmt(P.reduce((s,p)=>s+p.likes,0))}</td><td>${fmt(P.reduce((s,p)=>s+p.comments,0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.saves||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+p.interactions,0))}</td><td></td><td>${fmt(P.reduce((s,p)=>s+(p.profileVisits||0),0))}</td></tr>`;
 html+="</tbody>";
 document.getElementById("postTable").innerHTML=html;
 
