@@ -3,7 +3,7 @@
 {
   "name": "Social Media Tracker",
   "schemaVersion": 1,
-  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Refreshed 2026-09-14: IG 38 followers / 13 posts, LinkedIn 9,786 followers. Owner-level Instagram Insights could not be read on this run (the owner's Chrome session was unavailable), so account totals and per-post metrics are carried forward from 2026-06-17."
+  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Refreshed 2026-09-15: IG 38 followers / 13 posts, LinkedIn 9,786 followers. Owner-level IG Insights unavailable this run (Chrome is signed in as a different Instagram account), so account totals remain as of 2026-06-17 and the five newest posts carry public likes/comments only."
 }
 </script>
 <html lang="en">
@@ -39,7 +39,7 @@ h1 { font-size:22px; margin:0 0 2px; }
 .up{color:#15803d;} .down{color:#b91c1c;} .flat{color:#9aa0aa;}
 .warn { background:#fff8e6; border:1px solid #f5d98b; color:#7a5a00; border-radius:10px; padding:10px 13px; font-size:12.5px; margin-top:12px; }
 .banner { background:#fff8e6; border:1px solid #f5d98b; color:#7a5a00; border-radius:12px; padding:12px 15px; font-size:13px; margin-bottom:18px; }
-.banner b { font-weight:700; }
+.banner b { color:#5c4400; }
 /* account totals strip */
 .totals { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
 @media (max-width:760px){ .totals{ grid-template-columns:repeat(2,1fr);} }
@@ -49,6 +49,7 @@ h1 { font-size:22px; margin:0 0 2px; }
 .tf { display:inline-flex; gap:4px; background:#eef0f3; border-radius:9px; padding:3px; margin-left:8px; vertical-align:middle; }
 .tf button { border:none; background:transparent; font-size:12px; font-weight:600; color:#6b7280; padding:4px 12px; border-radius:7px; cursor:pointer; }
 .tf button.active { background:#fff; color:#1a1d24; box-shadow:0 1px 2px rgba(16,24,40,.08); }
+.stale { display:inline-block; background:#fef3c7; color:#92400e; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 7px; border-radius:5px; margin-left:8px; vertical-align:middle; }
 /* insight callouts */
 .insights { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 @media (max-width:680px){ .insights{ grid-template-columns:1fr; } }
@@ -57,7 +58,6 @@ h1 { font-size:22px; margin:0 0 2px; }
 .ins .b { font-size:13.5px; }
 .ins.green { border-left-color:#10b981; background:#f6fefb; } .ins.green .h{ color:#059669; }
 .ins.amber { border-left-color:#f59e0b; background:#fffdf5; } .ins.amber .h{ color:#b45309; }
-.ins.red { border-left-color:#e11d48; background:#fff6f7; } .ins.red .h{ color:#be123c; }
 .ins b { font-weight:700; }
 .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 @media (max-width:680px){ .grid2{ grid-template-columns:1fr; } }
@@ -85,7 +85,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
   <h1>Social Media Tracker</h1>
   <div class="sub">Jake Wombwell-Povey &middot; Instagram owner insights + LinkedIn &middot; <span id="lastUpd"></span></div>
 
-  <div class="banner" id="staleBanner" style="display:none"></div>
+  <div id="banner"></div>
 
   <!-- profile cards -->
   <div class="cards" id="cards"></div>
@@ -97,6 +97,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
         <button data-k="d7">Last 7 days</button>
         <button data-k="d30" class="active">Last 30 days</button>
       </span>
+      <span class="stale" id="staleTag" style="display:none">stale</span>
     </h2>
     <p class="note" id="totalsNote">Owner-level Insights. Reach = unique accounts; views = total impressions.</p>
     <div class="totals" id="totals"></div>
@@ -115,6 +116,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
     <div class="section">
       <h2>Views &amp; reach per post</h2>
       <div class="chart-box"><canvas id="viewsChart"></canvas></div>
+      <div class="muted" style="margin-top:6px">Posts without captured Insights are shown as gaps.</div>
     </div>
     <div class="section">
       <h2>Engagement rate per post</h2>
@@ -127,6 +129,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
     <div class="section">
       <h2>Follower growth</h2>
       <div class="chart-box"><canvas id="followerChart"></canvas></div>
+      <div class="muted" style="margin-top:6px">Instagram followers and LinkedIn followers on separate axes.</div>
     </div>
     <div class="section">
       <h2>Reels vs feed — avg views</h2>
@@ -137,7 +140,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
   <!-- per-post table -->
   <div class="section">
     <h2>Post performance — every post</h2>
-    <p class="note">Complete history, newest first. Each row links to the post followed by its figures. Rows shaded amber are awaiting owner-level Insights.</p>
+    <p class="note">Complete history, newest first. Each row links to the post followed by its figures. Highlighted rows are awaiting owner Insights.</p>
     <div class="tbl-wrap"><table id="postTable"></table></div>
   </div>
 
@@ -151,7 +154,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
       <label>LI connections<input type="number" id="f_lif" min="0"></label>
       <button type="submit">Add reading</button>
     </form>
-    <div class="foot">Auto-refreshed daily. Instagram per-post Insights require the daily refresh to run in a Chrome profile signed in as the <b>owner</b> of @jakebuilds.ai. Audience demographics unlock at 100+ followers.</div>
+    <div class="foot">Auto-refreshed daily. Instagram Insights require Chrome to be signed in as <b>@jakebuilds.ai</b>. Audience demographics unlock at 100+ followers.</div>
   </div>
 </div>
 
@@ -159,27 +162,27 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 /* ============ DATA (auto-refresh updates these) ============ */
 const SEED_READINGS = [
   { date: "2026-06-17", ig_followers: 31, ig_posts: 8,  li_connections: null, li_followers: null },
-  { date: "2026-09-10", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: null },
-  { date: "2026-09-14", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9786 }
+  { date: "2026-09-15", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9786, li_connections_capped: true }
 ];
 
 const SEED_ACCOUNT = {
-  asOf: "2026-09-14",          // date of the follower/profile reading
-  insightsAsOf: "2026-06-17",  // date the owner-level Insights below were last readable
-  insightsStale: true,
-  insightsFollowers: 31,      // follower count at the time the Insights below were read
-  followers: 38,
-  following: 86,
-  posts: 13,
+  asOf: "2026-06-17",              // date the owner Insights below were captured
+  lastChecked: "2026-09-15",       // date of the most recent refresh attempt
+  insightsAvailable: false,        // owner Insights could not be read on the last run
+  insightsNote: "Chrome is signed in to Instagram as a different account, so /accounts/insights/ is not accessible. Account totals below are the last successful capture (2026-06-17).",
+  followers: 38,                   // current follower count
+  followersAtInsights: 31,         // follower count when the totals below were captured
   d7:  { views:142, reach:19,  interactions:9,  engaged:5, profileVisits:24,  linkTaps:0,  byType:{Posts:78.7, Reels:21.3} },
   d30: { views:559, reach:236, interactions:20, engaged:9, profileVisits:337, linkTaps:19, byType:{Reels:81.8, Posts:13.1, Stories:4.9} }
 };
 
+/* views/reach/saves/shares/interactions/engaged/profileVisits/linkTaps come from owner Insights.
+   likes & comments are public and refreshed every run. null = not yet captured. */
 const SEED_POSTS = [
-  { code:"DZ93_DgjL0L", type:"carousel", date:"2026-06-24", caption:"Run more than one AI agent and two of them will eventually think they're the same agent.", views:null, reach:null, likes:3, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZ7xH5ysEkY", type:"post",     date:"2026-06-23", caption:"I had a note-taking system running for weeks. Every day it said “saved successfully.”", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZ5QRbkjAME", type:"carousel", date:"2026-06-22", caption:"Most prompts are one sentence. A short brief that tells Claude how to operate beats three rounds of fixing.", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZxtmIIsQas", type:"post",     date:"2026-06-19", caption:"Most people use the most powerful Claude for everything, then wonder why it feels slow and the bill creeps up.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ93_DgjL0L", type:"carousel", date:"2026-06-24", caption:"Run more than one AI agent and two of them will eventually think they're the same agent.", views:null, reach:null, likes:9, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ7xH5ysEkY", type:"carousel", date:"2026-06-23", caption:"I had a note-taking system running for weeks. Every day it said “saved successfully.”", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ5QRbkjAME", type:"carousel", date:"2026-06-22", caption:"Most prompts are one sentence. You ask, Claude answers, you fix what is wrong, you ask again.", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZxtmIIsQas", type:"carousel", date:"2026-06-19", caption:"Most people use the most powerful Claude for everything, then wonder why it feels slow and the bill creeps up.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZu4zZ6jEsd", type:"carousel", date:"2026-06-18", caption:"Most people open Claude, say “build me this,” then lose the next three days fixing what it guessed.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZsL8wgjMhN", type:"carousel", date:"2026-06-17", caption:"If you're buying real estate, the fastest win with AI is letting it screen your deals.", views:10,  reach:4,   likes:0, comments:0, saves:0, shares:0, interactions:0,  engaged:0, profileVisits:0, linkTaps:0 },
   { code:"DZpgRcPMXgo", type:"post",     date:"2026-06-16", caption:"Most people run AI like one overworked assistant. One chat window asked to do everything.", views:24,  reach:10,  likes:1, comments:0, saves:0, shares:0, interactions:1,  engaged:1, profileVisits:0, linkTaps:0 },
@@ -192,6 +195,7 @@ const SEED_POSTS = [
 ];
 
 const IG_URL="https://www.instagram.com/jakebuilds.ai/", LI_URL="https://uk.linkedin.com/in/jakewombwellpovey";
+const IG_FOLLOWING = 86;
 /* =========================================================== */
 
 const LS_R="smt_readings_v2";
@@ -199,21 +203,23 @@ function loadR(){ try{const v=JSON.parse(localStorage.getItem(LS_R));return Arra
 function mergeReadings(){ const map=new Map(); [...SEED_READINGS,...loadR()].forEach(r=>map.set(r.date,{...(map.get(r.date)||{}),...r})); return [...map.values()].sort((a,b)=>a.date.localeCompare(b.date)); }
 let readings=mergeReadings();
 const fmt=n=>n==null?"—":(+n).toLocaleString();
-const num=n=>n==null?0:+n;                       // null-safe accumulator
-const has=(p,k)=>p[k]!=null;                     // metric captured?
+const num=n=>n==null?0:+n;
 function lastVal(k){for(let i=readings.length-1;i>=0;i--)if(readings[i][k]!=null)return readings[i][k];return null;}
 function prevVal(k){let s=0;for(let i=readings.length-1;i>=0;i--){if(readings[i][k]!=null){s++;if(s===2)return readings[i][k];}}return null;}
-function deltaHtml(k){const c=lastVal(k),p=prevVal(k);if(c==null||p==null)return"";const d=c-p;if(d===0)return'<span class="delta flat">±0</span>';return`<span class="delta ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;}
+function deltaHtml(k){const c=lastVal(k),p=prevVal(k);if(c==null||p==null)return"";const d=c-p;if(d===0)return'<span class="delta flat">±0</span>';return`<span class="delta ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d).toLocaleString()}</span>`;}
+function lastRowWith(k){for(let i=readings.length-1;i>=0;i--)if(readings[i][k]!=null)return readings[i];return null;}
 
-document.getElementById("lastUpd").textContent="updated "+(SEED_ACCOUNT.asOf||"—");
+document.getElementById("lastUpd").textContent="updated "+(SEED_ACCOUNT.lastChecked||SEED_ACCOUNT.asOf||"—");
 
-/* ---- staleness banner ---- */
-if(SEED_ACCOUNT.insightsStale){
-  document.getElementById("staleBanner").style.display="block";
-  document.getElementById("staleBanner").innerHTML=
-    `<b>Owner Insights not refreshed.</b> Follower, profile and post-list data below are current as of <b>${SEED_ACCOUNT.asOf}</b>, but account totals and per-post metrics are carried forward from <b>${SEED_ACCOUNT.insightsAsOf}</b> — the daily refresh could not reach a Chrome profile signed in as the owner of @jakebuilds.ai. Posts added since then show “—” until an owner session is available.`;
+/* ---- stale-insights banner ---- */
+if(SEED_ACCOUNT.insightsAvailable===false){
+  document.getElementById("banner").innerHTML=
+    `<div class="banner"><b>Owner Insights not captured on this run.</b> ${SEED_ACCOUNT.insightsNote}
+     Follower, post and LinkedIn counts below are current as of ${SEED_ACCOUNT.lastChecked}; per-post views, reach, saves and shares for posts after ${SEED_ACCOUNT.asOf} are still pending.
+     Sign in to Instagram as <b>@jakebuilds.ai</b> in Chrome and the next refresh will fill them in.</div>`;
+  document.getElementById("staleTag").style.display="";
   document.getElementById("totalsNote").innerHTML=
-    `Owner-level Insights, as of <b>${SEED_ACCOUNT.insightsAsOf}</b> (not refreshed this run). Reach = unique accounts; views = total impressions.`;
+    `Owner-level Insights, captured <b>${SEED_ACCOUNT.asOf}</b> (not refreshed since). Reach = unique accounts; views = total impressions.`;
 }
 
 /* ---- profile cards ---- */
@@ -223,16 +229,19 @@ function card(cls,abbr,name,handle,url,rows,note){
     <div><div class="handle"><a href="${url}" target="_blank" rel="noopener">${handle}</a></div>
     <div class="muted">${name}</div></div></div><div class="metrics">${m}</div>${note||""}</div>`;
 }
+const liRow=lastRowWith("li_connections");
+const liConnDisplay=lastVal("li_connections")==null?"—":(liRow&&liRow.li_connections_capped?fmt(lastVal("li_connections"))+"+":fmt(lastVal("li_connections")));
 document.getElementById("cards").innerHTML =
   card("ig","IG","Jake Wombwell-Povey","@jakebuilds.ai",IG_URL,[
     {l:"Followers",v:fmt(lastVal("ig_followers")),d:deltaHtml("ig_followers")},
-    {l:"Following",v:fmt(SEED_ACCOUNT.following)},
+    {l:"Following",v:fmt(IG_FOLLOWING)},
     {l:"Posts",v:fmt(lastVal("ig_posts")),d:deltaHtml("ig_posts")}
   ]) +
   card("li","in","jakewombwellpovey","LinkedIn",LI_URL,[
-    {l:"Connections",v:fmt(lastVal("li_connections"))+"+",d:deltaHtml("li_connections")},
-    {l:"Followers",v:fmt(lastVal("li_followers")),d:deltaHtml("li_followers")}
-  ], '<div class="muted" style="margin-top:10px">LinkedIn caps the public connection count at 500+, so that figure is a floor, not an exact number.</div>');
+    {l:"Followers",v:fmt(lastVal("li_followers")),d:deltaHtml("li_followers")},
+    {l:"Connections",v:liConnDisplay}
+  ], lastVal("li_connections")==null&&lastVal("li_followers")==null
+     ?'<div class="warn">No LinkedIn data yet — sign in to LinkedIn in Chrome so the daily refresh can read this profile.</div>':"");
 
 /* ---- account totals (toggle) ---- */
 function renderTotals(k){
@@ -253,32 +262,36 @@ document.querySelectorAll("#tf button").forEach(b=>b.onclick=()=>{
 
 /* ---- computed insights ---- */
 const P=SEED_POSTS;
-const M=P.filter(p=>has(p,"views"));              // posts with captured metrics
-const pending=P.length-M.length;
-const er=p=>p.views?num(p.interactions)/p.views:0;
-const reels=M.filter(p=>p.type==="reel"), feed=M.filter(p=>p.type!=="reel");
-const avg=arr=>arr.length?Math.round(arr.reduce((s,p)=>s+num(p.views),0)/arr.length):0;
+const measured=P.filter(p=>p.views!=null);
+const pending=P.filter(p=>p.views==null);
+const er=p=>(p.views&&p.interactions!=null)?p.interactions/p.views:null;
+const reels=measured.filter(p=>p.type==="reel"), feed=measured.filter(p=>p.type!=="reel");
+const avg=arr=>arr.length?Math.round(arr.reduce((s,p)=>s+p.views,0)/arr.length):0;
 const reelAvg=avg(reels), feedAvg=avg(feed);
-const topViews=[...M].sort((a,b)=>num(b.views)-num(a.views))[0];
-const topER=[...M].filter(p=>num(p.views)>=20).sort((a,b)=>er(b)-er(a))[0];
-const totalViews=M.reduce((s,p)=>s+num(p.views),0);
-const totalSaves=M.reduce((s,p)=>s+num(p.saves),0);
+const topViews=measured.length?[...measured].sort((a,b)=>b.views-a.views)[0]:null;
+const topER=[...measured].filter(p=>p.views>=20&&er(p)!=null).sort((a,b)=>er(b)-er(a))[0]||null;
+const totalViews=measured.reduce((s,p)=>s+p.views,0);
+const totalSaves=P.reduce((s,p)=>s+num(p.saves),0);
+const totalLikes=P.reduce((s,p)=>s+num(p.likes),0);
 const mult=feedAvg?(reelAvg/feedAvg).toFixed(1):"—";
-const reachVsFollowers=(SEED_ACCOUNT.d30.reach/SEED_ACCOUNT.followers).toFixed(1);
+const reachVsFollowers=(SEED_ACCOUNT.d30.reach/(SEED_ACCOUNT.followersAtInsights||SEED_ACCOUNT.followers)).toFixed(1);
 const dt=d=>new Date(d).toLocaleDateString(undefined,{day:"numeric",month:"short"});
-const lastPost=[...P].sort((a,b)=>b.date.localeCompare(a.date))[0];
-const daysSince=Math.round((new Date(SEED_ACCOUNT.asOf)-new Date(lastPost.date))/864e5);
-const fGrowth=(()=>{const c=lastVal("ig_followers"),p=prevVal("ig_followers");return (c!=null&&p!=null)?{c,p,d:c-p}:null;})();
-
-const cards=[];
-cards.push({c:"red",h:"Posting has stopped",b:`The most recent post is <b>${dt(lastPost.date)}</b> — <b>${daysSince} days ago</b>. Reach on this account is driven almost entirely by recent posts, so the totals above will keep decaying until publishing resumes.`});
-if(fGrowth) cards.push({c:fGrowth.d>0?"green":"amber",h:"Follower change",b:`Instagram followers moved <b>${fGrowth.p} → ${fGrowth.c}</b> (<b>${fGrowth.d>0?"+":""}${fGrowth.d}</b>) between readings. LinkedIn is the far larger audience at <b>${fmt(lastVal("li_followers"))}</b> followers — worth treating as the primary channel.`});
-if(reelAvg&&feedAvg) cards.push({c:"green",h:"Reels out-reach feed posts",b:`Reels average <b>${fmt(reelAvg)} views</b> vs <b>${fmt(feedAvg)}</b> for posts &amp; carousels — about <b>${mult}×</b> more. More reels is still the clearest growth lever.`});
-if(topViews) cards.push({c:"",h:"Top post",b:`<b>${dt(topViews.date)}</b> ${topViews.type} — <b>${fmt(topViews.views)} views</b>, ${fmt(topViews.reach)} reach. "${topViews.caption.slice(0,60)}…"`});
+const igNow=lastVal("ig_followers"), igPrev=prevVal("ig_followers");
+const igDelta=(igNow!=null&&igPrev!=null)?igNow-igPrev:null;
+const cards=[
+  {c:"green",h:"Reels dramatically out-reach feed posts",b:`Reels average <b>${fmt(reelAvg)} views</b> vs <b>${fmt(feedAvg)}</b> for posts &amp; carousels — about <b>${mult}×</b> more. The lever for growth is clearly more reels.`}
+];
+if(topViews) cards.push({c:"",h:"Top post by views",b:`<b>${dt(topViews.date)}</b> ${topViews.type} — <b>${fmt(topViews.views)} views</b>, ${fmt(topViews.reach)} reach. "${topViews.caption.slice(0,60)}…"`});
 if(topER) cards.push({c:"amber",h:"Highest engagement rate",b:`<b>${dt(topER.date)}</b> ${topER.type} converted best at <b>${(er(topER)*100).toFixed(1)}%</b> (interactions ÷ views). Carousels punch above their reach for engagement.`});
-cards.push({c:"",h:"Reach vs. audience size",b:`The last measured 30-day window reached <b>${fmt(SEED_ACCOUNT.d30.reach)}</b> accounts — <b>${reachVsFollowers}×</b> the follower count — so distribution is not the bottleneck; conversion to follows is.`});
-if(totalSaves) cards.push({c:"green",h:"Carousels drive saves",b:`Carousels account for nearly all <b>${totalSaves} saves</b> across measured posts. Saves signal high-value, reference-style content.`});
-if(pending) cards.push({c:"amber",h:`${pending} post${pending>1?"s":""} unmeasured`,b:`<b>${pending}</b> post${pending>1?"s have":" has"} no metrics yet because owner-level Insights were unavailable on the last refresh. Run the refresh from a Chrome profile signed in as @jakebuilds.ai to backfill them.`});
+cards.push({c:"",h:"Reach is mostly new audiences",b:`In the 30 days to ${SEED_ACCOUNT.asOf}, ${fmt(SEED_ACCOUNT.d30.reach)} accounts were reached — <b>${reachVsFollowers}×</b> the follower count at the time — driven by reels.`});
+cards.push({c:"green",h:"Carousels drive saves",b:`Carousels account for nearly all <b>${totalSaves} saves</b> across measured posts. Saves signal high-value, reference-style content.`});
+if(igDelta!=null){
+  const per=SEED_READINGS.length>1?"":"";
+  cards.push(igDelta>0
+    ? {c:"green",h:"Followers growing",b:`Instagram followers are up <b>+${igDelta}</b> to <b>${fmt(igNow)}</b> since the last reading — a <b>${((igDelta/(igNow-igDelta))*100).toFixed(0)}%</b> gain. Still ${Math.max(0,100-igNow)} short of the 100 needed to unlock audience demographics.`}
+    : {c:"amber",h:`Followers flat at ${fmt(igNow)}`,b:`Reach isn't converting to follows yet. Add a clear follow CTA on top-reach reels.`});
+}
+if(pending.length) cards.push({c:"amber",h:"Posting paused since June",b:`The newest post is <b>${dt(P[0].date)}</b> — no new content in the ${Math.round((Date.now()-new Date(P[0].date))/864e5)} days since. <b>${pending.length}</b> posts also still need owner Insights (${fmt(totalLikes)} likes captured publicly).`});
 document.getElementById("insights").innerHTML=cards.map(i=>`<div class="ins ${i.c}"><div class="h">${i.h}</div><div class="b">${i.b}</div></div>`).join("");
 
 /* ---- charts ---- */
@@ -291,14 +304,16 @@ new Chart(document.getElementById("viewsChart"),{type:"bar",
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true}}}});
 
 new Chart(document.getElementById("erChart"),{type:"bar",
-  data:{labels,datasets:[{label:"Engagement rate %",data:order.map(p=>has(p,"views")?+(er(p)*100).toFixed(1):null),backgroundColor:order.map(p=>p.type==="reel"?"#be123c":"#10b981"),borderRadius:4}]},
+  data:{labels,datasets:[{label:"Engagement rate %",data:order.map(p=>{const v=er(p);return v==null?null:+(v*100).toFixed(1);}),backgroundColor:order.map(p=>p.type==="reel"?"#be123c":"#10b981"),borderRadius:4}]},
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+"%"}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+"%"}}}}});
 
 new Chart(document.getElementById("followerChart"),{type:"line",
   data:{labels:readings.map(r=>r.date),datasets:[
-    {label:"Instagram followers",data:readings.map(r=>r.ig_followers),borderColor:"#dc2743",backgroundColor:"rgba(220,39,67,.08)",tension:.3,spanGaps:true,fill:true,pointRadius:3},
-    {label:"LinkedIn connections",data:readings.map(r=>r.li_connections),borderColor:"#0a66c2",backgroundColor:"rgba(10,102,194,.08)",tension:.3,spanGaps:true,fill:true,pointRadius:3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{ticks:{precision:0}}}}});
+    {label:"Instagram",data:readings.map(r=>r.ig_followers),borderColor:"#dc2743",backgroundColor:"rgba(220,39,67,.08)",tension:.3,spanGaps:true,fill:true,pointRadius:3,yAxisID:"y"},
+    {label:"LinkedIn followers",data:readings.map(r=>r.li_followers),borderColor:"#0a66c2",backgroundColor:"rgba(10,102,194,.08)",tension:.3,spanGaps:true,fill:false,pointRadius:3,yAxisID:"y1"}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},
+    scales:{y:{position:"left",ticks:{precision:0},title:{display:true,text:"Instagram"}},
+            y1:{position:"right",grid:{drawOnChartArea:false},ticks:{precision:0},title:{display:true,text:"LinkedIn"}}}}});
 
 new Chart(document.getElementById("formatChart"),{type:"bar",
   data:{labels:["Reels","Posts & carousels"],datasets:[{label:"Avg views",data:[reelAvg,feedAvg],backgroundColor:["#be123c","#10b981"],borderRadius:6}]},
@@ -308,33 +323,36 @@ new Chart(document.getElementById("formatChart"),{type:"bar",
 const heads=["Post","Link","Type","Date","Views","Reach","Likes","Comments","Saves","Interactions","ER","Profile visits"];
 let html="<thead><tr>"+heads.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbody>";
 [...P].forEach(p=>{
-  const url=`https://www.instagram.com/${p.type==="reel"?"reel":"p"}/${p.code}/`;
-  html+=`<tr class="${has(p,"views")?"":"pending"}">`;
+  const url=`https://www.instagram.com/jakebuilds.ai/${p.type==="reel"?"reel":"p"}/${p.code}/`;
+  const e=er(p);
+  html+=`<tr class="${p.views==null?'pending':''}">`;
   html+=`<td>${p.caption.slice(0,52)}…${p.fbViews?` <span class="muted">(+${p.fbViews} FB)</span>`:""}</td>`;
   html+=`<td><a href="${url}" target="_blank" rel="noopener">${p.type==="reel"?"reel":"p"}/${p.code} ↗</a></td>`;
   html+=`<td><span class="tag t-${p.type}">${p.type}</span></td>`;
   html+=`<td>${dt(p.date)}</td>`;
   html+=`<td><b>${fmt(p.views)}</b></td><td>${fmt(p.reach)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.comments)}</td><td>${fmt(p.saves)}</td><td>${fmt(p.interactions)}</td>`;
-  html+=`<td>${has(p,"views")?(er(p)*100).toFixed(1)+"%":"—"}</td><td>${fmt(p.profileVisits)}</td>`;
+  html+=`<td>${e==null?"—":(e*100).toFixed(1)+"%"}</td><td>${fmt(p.profileVisits)}</td>`;
   html+="</tr>";
 });
-html+=`<tr style="font-weight:700"><td>TOTAL · ${M.length} measured of ${P.length} posts</td><td></td><td></td><td></td><td>${fmt(totalViews)}</td><td>${fmt(M.reduce((s,p)=>s+num(p.reach),0))}</td><td>${fmt(M.reduce((s,p)=>s+num(p.likes),0))}</td><td>${fmt(M.reduce((s,p)=>s+num(p.comments),0))}</td><td>${fmt(totalSaves)}</td><td>${fmt(M.reduce((s,p)=>s+num(p.interactions),0))}</td><td></td><td>${fmt(M.reduce((s,p)=>s+num(p.profileVisits),0))}</td></tr>`;
+const sum=k=>P.reduce((s,p)=>s+num(p[k]),0);
+html+=`<tr style="font-weight:700"><td>TOTAL · ${P.length} posts <span class="muted">(${measured.length} with Insights)</span></td><td></td><td></td><td></td><td>${fmt(sum("views"))}</td><td>${fmt(sum("reach"))}</td><td>${fmt(sum("likes"))}</td><td>${fmt(sum("comments"))}</td><td>${fmt(sum("saves"))}</td><td>${fmt(sum("interactions"))}</td><td></td><td>${fmt(sum("profileVisits"))}</td></tr>`;
 html+="</tbody>";
 document.getElementById("postTable").innerHTML=html;
 
 /* ---- linkedin note + manual add ---- */
 document.getElementById("liNote").textContent =
-  "LinkedIn read successfully on "+SEED_ACCOUNT.asOf+". Add numbers manually for any day the auto-refresh missed.";
+  (lastVal("li_followers")==null)
+    ? "LinkedIn isn't captured yet — sign in to LinkedIn in Chrome and the daily refresh will fill it in. You can also log numbers manually below."
+    : `LinkedIn read ${lastRowWith("li_followers").date}: ${lastVal("li_followers").toLocaleString()} followers, ${liConnDisplay} connections. Add numbers manually for any day the auto-refresh missed.`;
 document.getElementById("f_date").value=new Date().toISOString().slice(0,10);
 document.getElementById("addForm").addEventListener("submit",e=>{
   e.preventDefault();
   const date=document.getElementById("f_date").value; if(!date)return;
   const igf=document.getElementById("f_igf").value, lif=document.getElementById("f_lif").value;
-  try{
-    const stored=loadR().filter(r=>r.date!==date);
-    stored.push({date,ig_followers:igf===""?null:+igf,li_connections:lif===""?null:+lif});
-    localStorage.setItem(LS_R,JSON.stringify(stored)); location.reload();
-  }catch(err){ alert("Couldn't save locally in this browser context."); }
+  const stored=loadR().filter(r=>r.date!==date);
+  stored.push({date,ig_followers:igf===""?null:+igf,li_connections:lif===""?null:+lif});
+  try{ localStorage.setItem(LS_R,JSON.stringify(stored)); }catch(err){}
+  location.reload();
 });
 </script>
 </body>
