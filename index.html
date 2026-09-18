@@ -162,7 +162,11 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 /* ============ DATA (auto-refresh updates these) ============ */
 const SEED_READINGS = [
   { date: "2026-06-17", ig_followers: 31, ig_posts: 8,  li_connections: null, li_followers: null },
-  { date: "2026-09-18", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: 9787 }
+  { date: "2026-09-10", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: null },
+  { date: "2026-09-14", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9786, li_connections_capped: true },
+  { date: "2026-09-15", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9786, li_connections_capped: true },
+  { date: "2026-09-17", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9786, li_connections_capped: true },
+  { date: "2026-09-18", ig_followers: 38, ig_posts: 13, li_connections: 500,  li_followers: 9787, li_connections_capped: true }
 ];
 
 const SEED_ACCOUNT = {
@@ -233,9 +237,8 @@ document.getElementById("cards").innerHTML =
   ]) +
   card("li","in","jakewombwellpovey","LinkedIn",LI_URL,[
     {l:"Followers",v:fmt(lastVal("li_followers")),d:deltaHtml("li_followers")},
-    {l:"Connections",v:lastVal("li_connections")==null?"500+":fmt(lastVal("li_connections"))}
-  ], lastVal("li_connections")==null
-     ?'<div class="warn">LinkedIn shows connections only as “500+” on the profile, so an exact number isn’t available — followers are tracked instead.</div>':"");
+    {l:"Connections",v:(lastVal("li_connections")==null?"—":fmt(lastVal("li_connections"))+"+")}
+  ], '<div class="warn">LinkedIn shows connections only as “500+” on the profile, so an exact number isn’t available — follower count drives the growth chart.</div>');
 
 /* ---- account totals (toggle) ---- */
 function renderTotals(k){
@@ -278,7 +281,11 @@ const cards=[];
 if(daysSince>14) cards.push({c:"red",h:"Posting has stopped",b:`The most recent post is <b>${dt(lastPost.date)}</b> — <b>${daysSince} days ago</b>. Everything below is a snapshot of a paused account; reach and views decay quickly without new posts.`});
 cards.push({c:"green",h:"Reels dramatically out-reach feed posts",b:`Reels average <b>${fmt(reelAvg)} views</b> vs <b>${fmt(feedAvg)}</b> for posts &amp; carousels — about <b>${mult}×</b> more. The lever for growth is clearly more reels.`});
 cards.push({c:"",h:"Top post by views",b:`<b>${dt(topViews.date)}</b> ${topViews.type} — <b>${fmt(topViews.views)} views</b>, ${fmt(topViews.reach)} reach. “${topViews.caption.slice(0,60)}…”`});
-if(fGrow!=null) cards.push({c:fGrow>0?"green":"amber",h:"Follower change",b:`Followers moved from <b>${fmt(prevVal("ig_followers"))}</b> to <b>${fmt(lastVal("ig_followers"))}</b> (<b>${fGrow>0?"+":""}${fGrow}</b>) between ${readings[readings.length-2]?.date||"—"} and ${readings[readings.length-1].date}${daysSince>14?" — most of it carried by posts that are now months old.":"."}`});
+const firstIG=readings.find(r=>r.ig_followers!=null), lastIG=lastVal("ig_followers");
+if(firstIG){
+  const tot=lastIG-firstIG.ig_followers, span=dayDiff(firstIG.date,readings[readings.length-1].date);
+  cards.push({c:fGrow>0?"green":"amber",h:"Follower trend",b:`Instagram is at <b>${fmt(lastIG)}</b> followers — <b>${tot>0?"+":""}${tot}</b> since tracking began on ${firstIG.date} (${span} days), and <b>${fGrow>0?"+":""}${fGrow??0}</b> since the previous reading. Growth has been <b>flat since 2026-09-10</b>, matching the pause in posting.`});
+}
 cards.push({c:"amber",h:"Highest engagement rate",b:`<b>${dt(topER.date)}</b> ${topER.type} converted best at <b>${(er(topER)*100).toFixed(1)}%</b> (interactions ÷ views). Carousels punch above their reach for engagement.`});
 cards.push({c:"",h:"Top post by likes",b:`<b>${dt(topLikes.date)}</b> ${topLikes.type} leads on public likes with <b>${fmt(topLikes.likes)}</b> — well clear of every other post. “${topLikes.caption.slice(0,55)}…”`});
 cards.push({c:"",h:"Reach is mostly new audiences",b:`In the last captured 30-day window the account reached <b>${fmt(SEED_ACCOUNT.d30.reach)}</b> accounts — <b>${reachVsFollowers}×</b> the follower count at the time — driven by reels.`});
