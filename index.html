@@ -3,7 +3,7 @@
 {
   "name": "Social Media Tracker",
   "schemaVersion": 1,
-  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Latest reading 2026-09-23: IG 38 followers / 13 posts; LinkedIn 9,792 followers. Data refreshed by a daily scheduled task."
+  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Seeded 2026-06-17; refreshed 2026-09-24 (IG 38 followers / 13 posts, LinkedIn 9,790 followers / 500+ connections). Data refreshed by a daily scheduled task."
 }
 </script>
 <html lang="en">
@@ -92,7 +92,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
         <button data-k="d30" class="active">Last 30 days</button>
       </span>
     </h2>
-    <p class="note">Owner-level Insights. Reach = unique accounts; views = total impressions. <span id="acctAsOf"></span></p>
+    <p class="note" id="totalsNote">Owner-level Insights. Reach = unique accounts; views = total impressions.</p>
     <div class="totals" id="totals"></div>
     <div class="muted" id="byType" style="margin-top:12px"></div>
   </div>
@@ -131,7 +131,7 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
   <!-- per-post table -->
   <div class="section">
     <h2>Post performance — every post</h2>
-    <p class="note">Complete history, newest first. Each row links to the post followed by its figures. "—" = owner Insights not captured yet (public likes/comments shown).</p>
+    <p class="note">Complete history, newest first. Each row links to the post followed by its figures. "—" = owner Insights not captured.</p>
     <div class="tbl-wrap"><table id="postTable"></table></div>
   </div>
 
@@ -153,26 +153,24 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 /* ============ DATA (auto-refresh updates these) ============ */
 const SEED_READINGS = [
   { date: "2026-06-17", ig_followers: 31, ig_posts: 8, li_connections: null, li_followers: null },
-  { date: "2026-09-23", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: 9792 }
+  { date: "2026-09-24", ig_followers: 38, ig_posts: 13, li_connections: 500, li_followers: 9790 }
 ];
 
-const IG_FOLLOWING = 86;
-
-/* Account totals: last successful owner-Insights read was 2026-06-17 (2026-09-23 run: Chrome signed in as @stor_scale, Insights unavailable). */
 const SEED_ACCOUNT = {
-  asOf: "2026-06-17",
-  followers: 31,
+  asOf: "2026-09-24",
+  insightsAsOf: "2026-06-17",   // owner Insights not readable on 2026-09-24 (Chrome not signed in as @jakebuilds.ai); totals below are the last captured values
+  followers: 38,
+  following: 86,
   d7:  { views:142, reach:19,  interactions:9,  engaged:5, profileVisits:24,  linkTaps:0,  byType:{Posts:78.7, Reels:21.3} },
   d30: { views:559, reach:236, interactions:20, engaged:9, profileVisits:337, linkTaps:19, byType:{Reels:81.8, Posts:13.1, Stories:4.9} }
 };
-const LAST_REFRESH = "2026-09-23";
 
 const SEED_POSTS = [
   { code:"DZ93_DgjL0L", type:"post",     date:"2026-06-24", caption:"Run more than one AI agent and two of them will eventually think they're the same agent.", views:null, reach:null, likes:17, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZ7xH5ysEkY", type:"post",     date:"2026-06-23", caption:"I had a note-taking system running for weeks. Every day it said \"saved successfully.\"", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZ5QRbkjAME", type:"carousel", date:"2026-06-22", caption:"Most prompts are one sentence. Hand Claude a short brief that tells it how to operate.", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZxtmIIsQas", type:"post",     date:"2026-06-19", caption:"Most people use the most powerful Claude for everything. There's a model for each job.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
-  { code:"DZu4zZ6jEsd", type:"post",     date:"2026-06-18", caption:"Most people open Claude, say \"build me this,\" then lose three days. Write a one-page PRD first.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ7xH5ysEkY", type:"post",     date:"2026-06-23", caption:"I had a note-taking system running for weeks. Every day it said “saved successfully.”", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ5QRbkjAME", type:"post",     date:"2026-06-22", caption:"Most prompts are one sentence. You ask, Claude answers, you fix what is wrong, you ask again.", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZxtmIIsQas", type:"post",     date:"2026-06-19", caption:"Most people use the most powerful Claude for everything, then wonder why it feels slow.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZu4zZ6jEsd", type:"post",     date:"2026-06-18", caption:"Most people open Claude, say “build me this,” then lose the next three days fixing what it guessed.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZsL8wgjMhN", type:"carousel", date:"2026-06-17", caption:"If you're buying real estate, the fastest win with AI is letting it screen your deals.", views:10,  reach:4,   likes:0, comments:0, saves:0, shares:0, interactions:0,  engaged:0, profileVisits:0, linkTaps:0 },
   { code:"DZpgRcPMXgo", type:"post",     date:"2026-06-16", caption:"Most people run AI like one overworked assistant. One chat window asked to do everything.", views:24,  reach:10,  likes:1, comments:0, saves:0, shares:0, interactions:1,  engaged:1, profileVisits:0, linkTaps:0 },
   { code:"DZkeVKADB-b", type:"carousel", date:"2026-06-14", caption:"Claude forgets you the moment you close the chat. Give it a memory: one Obsidian folder.", views:42,  reach:13,  likes:3, comments:0, saves:3, shares:0, interactions:6,  engaged:5, profileVisits:1, linkTaps:0 },
@@ -196,8 +194,7 @@ function lastVal(k){for(let i=readings.length-1;i>=0;i--)if(readings[i][k]!=null
 function prevVal(k){let s=0;for(let i=readings.length-1;i>=0;i--){if(readings[i][k]!=null){s++;if(s===2)return readings[i][k];}}return null;}
 function deltaHtml(k){const c=lastVal(k),p=prevVal(k);if(c==null||p==null)return"";const d=c-p;if(d===0)return'<span class="delta flat">±0</span>';return`<span class="delta ${d>0?'up':'down'}">${d>0?'▲':'▼'} ${Math.abs(d)}</span>`;}
 
-document.getElementById("lastUpd").textContent="updated "+(LAST_REFRESH||SEED_ACCOUNT.asOf||"—");
-document.getElementById("acctAsOf").textContent=SEED_ACCOUNT.asOf!==LAST_REFRESH?`Totals as of ${SEED_ACCOUNT.asOf} (latest owner Insights read).`:"";
+document.getElementById("lastUpd").textContent="updated "+(SEED_ACCOUNT.asOf||"—");
 
 /* ---- profile cards ---- */
 function card(cls,abbr,name,handle,url,rows,note){
@@ -209,16 +206,19 @@ function card(cls,abbr,name,handle,url,rows,note){
 document.getElementById("cards").innerHTML =
   card("ig","IG","Jake Wombwell-Povey","@jakebuilds.ai",IG_URL,[
     {l:"Followers",v:fmt(lastVal("ig_followers")),d:deltaHtml("ig_followers")},
-    {l:"Following",v:fmt(IG_FOLLOWING)},
+    {l:"Following",v:fmt(SEED_ACCOUNT.following??84)},
     {l:"Posts",v:fmt(lastVal("ig_posts")),d:deltaHtml("ig_posts")}
   ]) +
   card("li","in","jakewombwellpovey","LinkedIn",LI_URL,[
-    {l:"Connections",v:lastVal("li_connections")==null&&lastVal("li_followers")!=null?"500+":fmt(lastVal("li_connections")),d:deltaHtml("li_connections")},
+    {l:"Connections",v:(lastVal("li_connections")===500?"500+":fmt(lastVal("li_connections"))),d:deltaHtml("li_connections")},
     {l:"Followers",v:fmt(lastVal("li_followers")),d:deltaHtml("li_followers")}
   ], lastVal("li_connections")==null&&lastVal("li_followers")==null
      ?'<div class="warn">No LinkedIn data yet — sign in to LinkedIn in Chrome so the daily refresh can read this profile.</div>':"");
 
 /* ---- account totals (toggle) ---- */
+if(SEED_ACCOUNT.insightsAsOf && SEED_ACCOUNT.insightsAsOf!==SEED_ACCOUNT.asOf){
+  document.getElementById("totalsNote").textContent="Owner-level Insights as of "+SEED_ACCOUNT.insightsAsOf+" (latest refresh couldn't read Insights). Reach = unique accounts; views = total impressions.";
+}
 function renderTotals(k){
   const a=SEED_ACCOUNT[k];
   document.getElementById("totals").innerHTML=[
@@ -238,27 +238,27 @@ document.querySelectorAll("#tf button").forEach(b=>b.onclick=()=>{
 /* ---- computed insights ---- */
 const P=SEED_POSTS;
 const PV=P.filter(p=>p.views!=null);
-const er=p=>p.views?p.interactions/p.views:0;
+const er=p=>(p.views&&p.interactions!=null)?p.interactions/p.views:null;
 const reels=PV.filter(p=>p.type==="reel"), feed=PV.filter(p=>p.type!=="reel");
 const avg=arr=>arr.length?Math.round(arr.reduce((s,p)=>s+p.views,0)/arr.length):0;
 const reelAvg=avg(reels), feedAvg=avg(feed);
 const topViews=[...PV].sort((a,b)=>b.views-a.views)[0];
 const topER=[...PV].filter(p=>p.views>=20).sort((a,b)=>er(b)-er(a))[0];
-const topLikes=[...P].sort((a,b)=>(b.likes||0)-(a.likes||0))[0];
 const totalViews=PV.reduce((s,p)=>s+p.views,0);
 const totalSaves=P.reduce((s,p)=>s+(p.saves||0),0);
+const topLiked=[...P].sort((a,b)=>(b.likes||0)-(a.likes||0))[0];
 const mult=feedAvg?(reelAvg/feedAvg).toFixed(1):"—";
 const reachVsFollowers=(SEED_ACCOUNT.d30.reach/SEED_ACCOUNT.followers).toFixed(1);
 const dt=d=>new Date(d).toLocaleDateString(undefined,{day:"numeric",month:"short"});
-const lastPostDate=[...P].sort((a,b)=>b.date.localeCompare(a.date))[0].date;
-const daysSincePost=Math.round((new Date(LAST_REFRESH)-new Date(lastPostDate))/864e5);
+const lastPost=[...P].sort((a,b)=>b.date.localeCompare(a.date))[0];
+const daysSince=Math.round((new Date(SEED_ACCOUNT.asOf)-new Date(lastPost.date))/864e5);
 document.getElementById("insights").innerHTML=[
   {c:"green",h:"Reels dramatically out-reach feed posts",b:`Reels average <b>${fmt(reelAvg)} views</b> vs <b>${fmt(feedAvg)}</b> for posts &amp; carousels — about <b>${mult}×</b> more. The lever for growth is clearly more reels.`},
-  {c:"",h:"Top post",b:`<b>${dt(topViews.date)}</b> ${topViews.type} — <b>${fmt(topViews.views)} views</b>, ${fmt(topViews.reach)} reach. "${topViews.caption.slice(0,60)}…" Most-liked: <b>${dt(topLikes.date)}</b> (${topLikes.likes} likes).`},
+  {c:"",h:"Top post",b:`<b>${dt(topViews.date)}</b> ${topViews.type} — <b>${fmt(topViews.views)} views</b>, ${fmt(topViews.reach)} reach. "${topViews.caption.slice(0,60)}…" Most-liked: <b>${dt(topLiked.date)}</b> (${topLiked.likes} likes).`},
   {c:"amber",h:"Highest engagement rate",b:`<b>${dt(topER.date)}</b> ${topER.type} converted best at <b>${(er(topER)*100).toFixed(1)}%</b> (interactions ÷ views). Carousels punch above their reach for engagement.`},
-  {c:"",h:"Reach is mostly new audiences",b:`Last 30 days (as of ${SEED_ACCOUNT.asOf}) reached <b>${fmt(SEED_ACCOUNT.d30.reach)}</b> accounts — <b>${reachVsFollowers}×</b> the follower count then — and <b>61.7%</b> were non-followers, driven by reels.`},
+  {c:daysSince>14?"amber":"",h:daysSince>14?"Posting has paused":"Posting cadence",b:`Last post was <b>${dt(lastPost.date)}</b> — <b>${daysSince} days</b> before this refresh. ${daysSince>14?"Reach and follower growth depend on consistent reels; restart a regular cadence.":"Keep it up."}`},
   {c:"green",h:"Carousels drive saves",b:`Carousels account for nearly all <b>${totalSaves} saves</b> across recent posts. Saves signal high-value, reference-style content.`},
-  {c:"amber",h:`Followers at ${fmt(lastVal("ig_followers"))} · ${daysSincePost} days since last post`,b:`Last post was <b>${dt(lastPostDate)}</b>. Growth is slow (${fmt(prevVal("ig_followers"))} → ${fmt(lastVal("ig_followers"))}); resuming posting — especially reels with a follow CTA — is the biggest lever.`}
+  {c:"amber",h:`Followers at ${SEED_ACCOUNT.followers}`,b:`Up from 31 on 17 Jun. Strong reach (${fmt(totalViews)} views on tracked posts) is converting slowly — add a clear follow CTA on top-reach reels.`}
 ].map(i=>`<div class="ins ${i.c}"><div class="h">${i.h}</div><div class="b">${i.b}</div></div>`).join("");
 
 /* ---- charts ---- */
@@ -271,7 +271,7 @@ new Chart(document.getElementById("viewsChart"),{type:"bar",
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom"}},scales:{y:{beginAtZero:true}}}});
 
 new Chart(document.getElementById("erChart"),{type:"bar",
-  data:{labels,datasets:[{label:"Engagement rate %",data:order.map(p=>p.views==null?null:+(er(p)*100).toFixed(1)),backgroundColor:order.map(p=>p.type==="reel"?"#be123c":"#10b981"),borderRadius:4}]},
+  data:{labels,datasets:[{label:"Engagement rate %",data:order.map(p=>er(p)==null?null:+(er(p)*100).toFixed(1)),backgroundColor:order.map(p=>p.type==="reel"?"#be123c":"#10b981"),borderRadius:4}]},
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+"%"}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v+"%"}}}}});
 
 new Chart(document.getElementById("followerChart"),{type:"line",
@@ -295,7 +295,7 @@ let html="<thead><tr>"+heads.map(h=>`<th>${h}</th>`).join("")+"</tr></thead><tbo
   html+=`<td><span class="tag t-${p.type}">${p.type}</span></td>`;
   html+=`<td>${dt(p.date)}</td>`;
   html+=`<td><b>${fmt(p.views)}</b></td><td>${fmt(p.reach)}</td><td>${fmt(p.likes)}</td><td>${fmt(p.comments)}</td><td>${fmt(p.saves)}</td><td>${fmt(p.interactions)}</td>`;
-  html+=`<td>${p.views==null?"—":(er(p)*100).toFixed(1)+"%"}</td><td>${fmt(p.profileVisits)}</td>`;
+  html+=`<td>${er(p)==null?"—":(er(p)*100).toFixed(1)+"%"}</td><td>${fmt(p.profileVisits)}</td>`;
   html+="</tr>";
 });
 html+=`<tr style="font-weight:700"><td>TOTAL · ${P.length} posts</td><td></td><td></td><td></td><td>${fmt(P.reduce((s,p)=>s+(p.views||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.reach||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.likes||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.comments||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.saves||0),0))}</td><td>${fmt(P.reduce((s,p)=>s+(p.interactions||0),0))}</td><td></td><td>${fmt(P.reduce((s,p)=>s+(p.profileVisits||0),0))}</td></tr>`;
@@ -304,7 +304,7 @@ document.getElementById("postTable").innerHTML=html;
 
 /* ---- linkedin note + manual add ---- */
 document.getElementById("liNote").textContent =
-  (lastVal("li_connections")==null&&lastVal("li_followers")==null) ? "LinkedIn isn't captured yet — sign in to LinkedIn in Chrome and the daily refresh will fill it in. You can also log numbers manually below." : "LinkedIn shows connections as \"500+\" only; followers are tracked daily. Add numbers manually for any day the auto-refresh missed.";
+  (lastVal("li_connections")==null) ? "LinkedIn isn't captured yet — sign in to LinkedIn in Chrome and the daily refresh will fill it in. You can also log numbers manually below." : "Add numbers manually for any day the auto-refresh missed.";
 document.getElementById("f_date").value=new Date().toISOString().slice(0,10);
 document.getElementById("addForm").addEventListener("submit",e=>{
   e.preventDefault();
@@ -312,7 +312,7 @@ document.getElementById("addForm").addEventListener("submit",e=>{
   const igf=document.getElementById("f_igf").value, lif=document.getElementById("f_lif").value;
   const stored=loadR().filter(r=>r.date!==date);
   stored.push({date,ig_followers:igf===""?null:+igf,li_connections:lif===""?null:+lif});
-  try{localStorage.setItem(LS_R,JSON.stringify(stored));}catch(err){} location.reload();
+  localStorage.setItem(LS_R,JSON.stringify(stored)); location.reload();
 });
 </script>
 </body>
