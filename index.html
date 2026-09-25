@@ -3,7 +3,7 @@
 {
   "name": "Social Media Tracker",
   "schemaVersion": 1,
-  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Seeded 2026-06-17; refreshed 2026-09-24 (IG 38 followers / 13 posts, LinkedIn 9,790 followers / 500+ connections). Data refreshed by a daily scheduled task."
+  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Seeded 2026-06-17; refreshed 2026-09-25 (IG 39 followers / 13 posts, LinkedIn 9,791 followers / 500+ connections). Data refreshed by a daily scheduled task."
 }
 </script>
 <html lang="en">
@@ -154,20 +154,21 @@ form.add button { padding:7px 14px; border:none; background:#111827; color:#fff;
 const SEED_READINGS = [
   { date: "2026-06-17", ig_followers: 31, ig_posts: 8, li_connections: null, li_followers: null },
   { date: "2026-09-23", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: 9792 },
-  { date: "2026-09-24", ig_followers: 38, ig_posts: 13, li_connections: 500, li_followers: 9790 }
+  { date: "2026-09-24", ig_followers: 38, ig_posts: 13, li_connections: 500, li_followers: 9790 },
+  { date: "2026-09-25", ig_followers: 39, ig_posts: 13, li_connections: 500, li_followers: 9791 }
 ];
 
 const SEED_ACCOUNT = {
-  asOf: "2026-09-24",
-  insightsAsOf: "2026-06-17",   // owner Insights not readable on 2026-09-24 (Chrome not signed in as @jakebuilds.ai); totals below are the last captured values
-  followers: 38,
+  asOf: "2026-09-25",
+  insightsAsOf: "2026-06-17", // owner Insights not readable on 2026-09-24/25 (Chrome signed in to a non-owner IG account); totals below are the last captured values
+  followers: 39,
   following: 86,
   d7:  { views:142, reach:19,  interactions:9,  engaged:5, profileVisits:24,  linkTaps:0,  byType:{Posts:78.7, Reels:21.3} },
   d30: { views:559, reach:236, interactions:20, engaged:9, profileVisits:337, linkTaps:19, byType:{Reels:81.8, Posts:13.1, Stories:4.9} }
 };
 
 const SEED_POSTS = [
-  { code:"DZ93_DgjL0L", type:"post",     date:"2026-06-24", caption:"Run more than one AI agent and two of them will eventually think they're the same agent.", views:null, reach:null, likes:17, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
+  { code:"DZ93_DgjL0L", type:"carousel", date:"2026-06-24", caption:"Run more than one AI agent and two of them will eventually think they're the same agent.", views:null, reach:null, likes:18, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZ7xH5ysEkY", type:"post",     date:"2026-06-23", caption:"I had a note-taking system running for weeks. Every day it said “saved successfully.”", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZ5QRbkjAME", type:"carousel", date:"2026-06-22", caption:"Most prompts are one sentence. You ask, Claude answers, you fix what is wrong, you ask again.", views:null, reach:null, likes:1, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
   { code:"DZxtmIIsQas", type:"post",     date:"2026-06-19", caption:"Most people use the most powerful Claude for everything, then wonder why it feels slow.", views:null, reach:null, likes:0, comments:0, saves:null, shares:null, interactions:null, engaged:null, profileVisits:null, linkTaps:null },
