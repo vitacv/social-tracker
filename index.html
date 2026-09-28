@@ -3,7 +3,7 @@
 {
   "name": "Social Media Tracker",
   "schemaVersion": 1,
-  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Seeded 2026-06-17; refreshed 2026-09-25 (IG 39 followers / 13 posts, LinkedIn 9,791 followers / 500+ connections). Data refreshed by a daily scheduled task."
+  "description": "Daily tracker for Jake Wombwell-Povey's Instagram (@jakebuilds.ai) and LinkedIn (jakewombwellpovey): follower growth, posting cadence, engagement per post, and a recent-posts feed. Seeded 2026-06-17; refreshed 2026-09-28 (IG 39 followers / 13 posts, LinkedIn 9,791 followers / 500+ connections). Owner-level Instagram Insights still unreadable since 2026-06-17 (Chrome is signed in to a non-owner IG account, @stor_scale) — public counts only. Data refreshed by a daily scheduled task."
 }
 </script>
 <html lang="en">
@@ -155,12 +155,13 @@ const SEED_READINGS = [
   { date: "2026-06-17", ig_followers: 31, ig_posts: 8, li_connections: null, li_followers: null },
   { date: "2026-09-23", ig_followers: 38, ig_posts: 13, li_connections: null, li_followers: 9792 },
   { date: "2026-09-24", ig_followers: 38, ig_posts: 13, li_connections: 500, li_followers: 9790 },
-  { date: "2026-09-25", ig_followers: 39, ig_posts: 13, li_connections: 500, li_followers: 9791 }
+  { date: "2026-09-25", ig_followers: 39, ig_posts: 13, li_connections: 500, li_followers: 9791 },
+  { date: "2026-09-28", ig_followers: 39, ig_posts: 13, li_connections: 500, li_followers: 9791 }
 ];
 
 const SEED_ACCOUNT = {
-  asOf: "2026-09-25",
-  insightsAsOf: "2026-06-17", // owner Insights not readable on 2026-09-24/25 (Chrome signed in to a non-owner IG account); totals below are the last captured values
+  asOf: "2026-09-28",
+  insightsAsOf: "2026-06-17", // owner Insights still not readable as of 2026-09-28 (Chrome signed in to a non-owner IG account, @stor_scale); totals below are the last captured values
   followers: 39,
   following: 86,
   d7:  { views:142, reach:19,  interactions:9,  engaged:5, profileVisits:24,  linkTaps:0,  byType:{Posts:78.7, Reels:21.3} },
